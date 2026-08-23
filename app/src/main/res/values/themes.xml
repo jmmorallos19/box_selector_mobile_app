@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.BoxSelector" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/deep_blue</item>
+        <item name="colorPrimaryVariant">@color/deep_blue_dark</item>
+        <item name="colorSecondary">@color/yellow_accent</item>
+        <item name="android:statusBarColor">@color/deep_blue_dark</item>
+        <item name="android:windowBackground">@color/deep_blue</item>
+        <item name="android:navigationBarColor">@color/deep_blue_dark</item>
+        <item name="materialButtonStyle">@style/Widget.AppCompat.Button</item>
+    </style>
+</resources>

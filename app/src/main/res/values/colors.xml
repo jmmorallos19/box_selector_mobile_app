@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="deep_blue">#1A365D</color>
+    <color name="deep_blue_dark">#122844</color>
+    <color name="deep_blue_light">#2B4A7A</color>
+    <color name="white">#FFFFFF</color>
+    <color name="off_white">#F7F9FC</color>
+    <color name="green_button">#2E7D32</color>
+    <color name="green_button_dark">#1B5E20</color>
+    <color name="yellow_accent">#F9A825</color>
+    <color name="yellow_light">#FFF8E1</color>
+    <color name="text_dark">#1A202C</color>
+    <color name="text_gray">#5A6577</color>
+    <color name="locked_gray">#9E9E9E</color>
+    <color name="locked_bg">#E0E0E0</color>
+    <color name="red_wrong">#C62828</color>
+    <color name="box_orange">#EF6C00</color>
+    <color name="transparent">#00000000</color>
+</resources>

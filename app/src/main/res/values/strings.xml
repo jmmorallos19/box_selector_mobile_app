@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Box Selector</string>
+    <string name="title_box_selector">BOX SELECTOR</string>
+    <string name="play">PLAY</string>
+    <string name="levels">Levels</string>
+    <string name="shop">Shop</string>
+    <string name="collection">Collection</string>
+    <string name="achievements">Achievements</string>
+    <string name="settings">Settings</string>
+    <string name="coins">Coins</string>
+    <string name="hint">Hint</string>
+    <string name="extra_time">Extra Time</string>
+    <string name="box_reveal">Box Reveal</string>
+    <string name="buy">BUY</string>
+    <string name="level_complete">Level Complete!</string>
+    <string name="home">Home</string>
+    <string name="next">Next</string>
+    <string name="replay">Replay</string>
+    <string name="memorize_box">Memorize the correct box!</string>
+    <string name="memorize_countdown">Memorize the correct box!  %1$d</string>
+    <string name="choose_box">Choose the right box!</string>
+    <string name="wrong_box">Wrong Box!</string>
+    <string name="correct_box">Correct!</string>
+</resources>

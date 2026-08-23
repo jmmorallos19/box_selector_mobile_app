@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/deep_blue"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:contentDescription="@string/home"
+            android:src="@drawable/ic_back" />
+
+        <TextView
+            android:id="@+id/tvLevelsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:drawableStart="@drawable/ic_levels"
+            android:drawablePadding="8dp"
+            android:drawableTint="@color/yellow_accent"
+            android:gravity="center"
+            android:text="LEVELS"
+            android:textColor="@color/yellow_accent"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <GridLayout
+        android:id="@+id/gridLevels"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:columnCount="3">
+
+        <Button
+            android:id="@+id/btnLevel1"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_button_green"
+            android:text="1"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel2"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_button_green"
+            android:text="2"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel3"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_button_green"
+            android:text="3"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel4"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_item_locked"
+            android:text="4"
+            android:textColor="@color/text_gray"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel5"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_item_locked"
+            android:text="5"
+            android:textColor="@color/text_gray"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel6"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_item_locked"
+            android:text="6"
+            android:textColor="@color/text_gray"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel7"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_item_locked"
+            android:text="7"
+            android:textColor="@color/text_gray"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel8"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_item_locked"
+            android:text="8"
+            android:textColor="@color/text_gray"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLevel9"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:background="@drawable/bg_item_locked"
+            android:text="9"
+            android:textColor="@color/text_gray"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+    </GridLayout>
+
+    <TextView
+        android:id="@+id/tvLevelsHint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="Green levels are unlocked. Complete a level to open the next one."
+        android:textColor="@color/white"
+        android:textSize="13sp" />
+
+</LinearLayout>
