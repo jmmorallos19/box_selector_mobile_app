@@ -9,36 +9,38 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-/** Home screen: shows coins and opens Play, Shop, Collection, and other menus. */
+/** Home screen after login. PLAY opens difficulty select. */
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvCoins;
-    private Button btnPlay;
-    private Button btnLevels;
-    private Button btnShop;
-    private Button btnCollection;
-    private Button btnAchievements;
-    private ImageButton btnSettings;
+    private TextView tvUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!GamePrefs.isLoggedIn(this)) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
-
         tvCoins = findViewById(R.id.tvCoins);
-        btnPlay = findViewById(R.id.btnPlay);
-        btnLevels = findViewById(R.id.btnLevels);
-        btnShop = findViewById(R.id.btnShop);
-        btnCollection = findViewById(R.id.btnCollection);
-        btnAchievements = findViewById(R.id.btnAchievements);
-        btnSettings = findViewById(R.id.btnSettings);
+        tvUsername = findViewById(R.id.tvUsername);
+        Button btnPlay = findViewById(R.id.btnPlay);
+        Button btnLevels = findViewById(R.id.btnLevels);
+        Button btnShop = findViewById(R.id.btnShop);
+        Button btnCollection = findViewById(R.id.btnCollection);
+        Button btnLeaderboard = findViewById(R.id.btnLeaderboard);
+        ImageButton btnSettings = findViewById(R.id.btnSettings);
 
-        // PLAY opens the game. We send the current unlocked level.
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, GameplayActivity.class);
-                intent.putExtra("level", GamePrefs.getHighestLevel(MainActivity.this));
+                SoundPlayer.playClick(MainActivity.this);
+                Intent intent = new Intent(MainActivity.this, DifficultyActivity.class);
+                intent.putExtra("selectStage", false);
                 startActivity(intent);
             }
         });
@@ -46,13 +48,17 @@ public class MainActivity extends AppCompatActivity {
         btnLevels.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, LevelsActivity.class));
+                SoundPlayer.playClick(MainActivity.this);
+                Intent intent = new Intent(MainActivity.this, DifficultyActivity.class);
+                intent.putExtra("selectStage", true);
+                startActivity(intent);
             }
         });
 
         btnShop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(MainActivity.this);
                 startActivity(new Intent(MainActivity.this, ShopActivity.class));
             }
         });
@@ -60,20 +66,23 @@ public class MainActivity extends AppCompatActivity {
         btnCollection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(MainActivity.this);
                 startActivity(new Intent(MainActivity.this, CollectionActivity.class));
             }
         });
 
-        btnAchievements.setOnClickListener(new View.OnClickListener() {
+        btnLeaderboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, AchievementsActivity.class));
+                SoundPlayer.playClick(MainActivity.this);
+                startActivity(new Intent(MainActivity.this, LeaderboardActivity.class));
             }
         });
 
         btnSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(MainActivity.this);
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
             }
         });
@@ -82,6 +91,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        tvCoins.setText(String.valueOf(GamePrefs.getCoins(this)));
+        if (tvCoins != null) {
+            tvCoins.setText(String.valueOf(GamePrefs.getCoins(this)));
+        }
+        if (tvUsername != null) {
+            tvUsername.setText(GamePrefs.getUsername(this));
+        }
     }
 }

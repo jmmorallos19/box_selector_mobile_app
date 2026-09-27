@@ -22,4 +22,7 @@
     <string name="choose_box">Choose the right box!</string>
     <string name="wrong_box">Wrong Box!</string>
     <string name="correct_box">Correct!</string>
+    <string name="leaderboard">Ranks</string>
+    <string name="lives">Lives</string>
+    <string name="game_over">Game Over</string>
 </resources>

@@ -4,12 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.GridLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+/** Shows 15 stages for the selected difficulty. */
 public class LevelsActivity extends AppCompatActivity {
 
     @Override
@@ -17,46 +20,63 @@ public class LevelsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_levels);
 
+        final String difficulty = getIntent().getStringExtra("difficulty");
+        final String selected = difficulty == null ? DifficultyConfig.NORMAL : difficulty;
+
+        TextView tvTitle = findViewById(R.id.tvLevelsTitle);
+        tvTitle.setText(selected.toUpperCase());
+
         ImageButton btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(LevelsActivity.this);
                 finish();
             }
         });
 
-        int highestLevel = GamePrefs.getHighestLevel(this);
-        int[] buttonIds = {
-                R.id.btnLevel1, R.id.btnLevel2, R.id.btnLevel3,
-                R.id.btnLevel4, R.id.btnLevel5, R.id.btnLevel6,
-                R.id.btnLevel7, R.id.btnLevel8, R.id.btnLevel9
-        };
+        GridLayout grid = findViewById(R.id.gridLevels);
+        grid.removeAllViews();
+        int unlocked = GamePrefs.getHighestStage(this, selected);
 
-        for (int i = 0; i < buttonIds.length; i++) {
-            final int levelNumber = i + 1;
-            Button levelButton = findViewById(buttonIds[i]);
+        for (int i = 1; i <= DifficultyConfig.STAGE_COUNT; i++) {
+            final int stage = i;
+            Button button = new Button(this);
+            button.setText(String.valueOf(stage));
+            button.setTextSize(18);
+            button.setAllCaps(false);
 
-            if (levelNumber <= highestLevel) {
-                levelButton.setBackgroundResource(R.drawable.bg_button_green);
-                levelButton.setTextColor(ContextCompat.getColor(LevelsActivity.this, R.color.white));
-                levelButton.setOnClickListener(new View.OnClickListener() {
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = (int) (72 * getResources().getDisplayMetrics().density);
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
+            params.setMargins(12, 12, 12, 12);
+            button.setLayoutParams(params);
+
+            if (stage <= unlocked) {
+                button.setBackgroundResource(R.drawable.bg_button_green);
+                button.setTextColor(ContextCompat.getColor(this, R.color.white));
+                button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        SoundPlayer.playClick(LevelsActivity.this);
                         Intent intent = new Intent(LevelsActivity.this, GameplayActivity.class);
-                        intent.putExtra("level", levelNumber);
+                        intent.putExtra("difficulty", selected);
+                        intent.putExtra("stage", stage);
                         startActivity(intent);
                     }
                 });
             } else {
-                levelButton.setBackgroundResource(R.drawable.bg_item_locked);
-                levelButton.setTextColor(ContextCompat.getColor(LevelsActivity.this, R.color.text_gray));
-                levelButton.setOnClickListener(new View.OnClickListener() {
+                button.setBackgroundResource(R.drawable.bg_item_locked);
+                button.setTextColor(ContextCompat.getColor(this, R.color.text_gray));
+                button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(LevelsActivity.this, "Level locked!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LevelsActivity.this, "Stage locked!", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
+            grid.addView(button);
         }
     }
 }

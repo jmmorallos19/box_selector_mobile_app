@@ -95,4 +95,14 @@
         android:textColor="@color/white"
         android:textSize="14sp" />
 
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_box_wrong"
+        android:text="LOGOUT"
+        android:textColor="@color/white"
+        android:textStyle="bold" />
+
 </LinearLayout>

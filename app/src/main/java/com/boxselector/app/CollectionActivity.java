@@ -18,6 +18,7 @@ public class CollectionActivity extends AppCompatActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(CollectionActivity.this);
                 finish();
             }
         });

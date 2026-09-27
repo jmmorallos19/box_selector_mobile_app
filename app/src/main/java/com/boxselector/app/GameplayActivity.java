@@ -21,28 +21,20 @@ import java.util.Collections;
 import java.util.Random;
 
 /**
- * Main game screen of Box Selector.
+ * Game screen.
  *
- * Game flow (easy to explain in defense):
- * 1. Memorize Phase - show the correct box for 3 seconds. Clicks are off.
- * 2. Cover Phase    - hide all boxes, then start/resume the 45s timer.
- * 3. Tap Phase      - player picks a box. Correct = coins + progress.
- * 4. Win            - when the player finds the target number of boxes.
+ * Flow:
+ * 1. Memorize the green box while the 3-2-1 countdown runs.
+ * 2. Boxes are covered and the stage timer starts.
+ * 3. Correct tap = coins + progress. Wrong tap or timeout = lose 1 life.
+ * 4. 0 lives = Game Over. Target reached = Level Complete.
  */
 public class GameplayActivity extends AppCompatActivity {
 
-    // How long the player can see the correct box at the start
-    private static final int MEMORIZE_TIME_MS = 3000;
-    // Starting time for each level
-    private static final int LEVEL_TIME_MS = 45000;
-    // Time removed when the player taps a wrong box
     private static final int WRONG_PENALTY_MS = 5000;
-    // Coins given for every correct box
-    private static final int CORRECT_COINS = 150;
-    // How many correct boxes are needed to finish the level
-    private static final int TARGET_HITS = 3;
 
     private TextView tvLevel;
+    private TextView tvLives;
     private TextView tvCoins;
     private TextView tvTimer;
     private TextView tvStatus;
@@ -56,12 +48,19 @@ public class GameplayActivity extends AppCompatActivity {
     private Button btnBoxReveal;
     private Button[] boxButtons = new Button[9];
 
-    private int currentLevel = 1;
+    private String difficulty = DifficultyConfig.NORMAL;
+    private int currentStage = 1;
+    private int lives = 3;
+    private int targetHits = 3;
+    private int memorizeTimeMs = 3000;
+    private int levelTimeMs = 45000;
+    private int coinReward = 150;
+
     private int correctBox = 0;
     private int correctHits = 0;
     private int score = 0;
     private int streak = 0;
-    private int timeLeftMs = LEVEL_TIME_MS;
+    private int timeLeftMs = 45000;
     private int coinsEarnedThisLevel = 0;
 
     private boolean isMemorizing = false;
@@ -78,20 +77,33 @@ public class GameplayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gameplay);
 
-        // Level number comes from PLAY or the Levels screen
-        currentLevel = getIntent().getIntExtra("level", 1);
+        difficulty = getIntent().getStringExtra("difficulty");
+        if (difficulty == null) {
+            difficulty = DifficultyConfig.NORMAL;
+        }
+        currentStage = getIntent().getIntExtra("stage", getIntent().getIntExtra("level", 1));
+        applyDifficultySettings();
 
         connectViews();
         setupClickListeners();
-
-        tvLevel.setText("Level " + currentLevel);
+        updateHeader();
         updateCoinsText();
         startLevel();
     }
 
-    /** Finds every widget from activity_gameplay.xml using its ID. */
+    /** Loads timer, lives, and target based on difficulty and stage. */
+    private void applyDifficultySettings() {
+        lives = DifficultyConfig.getStartLives(difficulty);
+        targetHits = DifficultyConfig.getTargetHits(difficulty, currentStage);
+        memorizeTimeMs = DifficultyConfig.getMemorizeMs(difficulty);
+        levelTimeMs = DifficultyConfig.getTimeMs(difficulty, currentStage);
+        coinReward = DifficultyConfig.getCoinReward(difficulty);
+        timeLeftMs = levelTimeMs;
+    }
+
     private void connectViews() {
         tvLevel = findViewById(R.id.tvLevel);
+        tvLives = findViewById(R.id.tvLives);
         tvCoins = findViewById(R.id.tvCoins);
         tvTimer = findViewById(R.id.tvTimer);
         tvStatus = findViewById(R.id.tvStatus);
@@ -115,7 +127,6 @@ public class GameplayActivity extends AppCompatActivity {
         boxButtons[8] = findViewById(R.id.btnBox9);
     }
 
-    /** Sets OnClickListener for the 9 boxes and the 3 power-up buttons. */
     private void setupClickListeners() {
         for (int i = 0; i < boxButtons.length; i++) {
             final int boxIndex = i;
@@ -130,26 +141,26 @@ public class GameplayActivity extends AppCompatActivity {
         btnHint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
                 useHint();
             }
         });
-
         btnExtraTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
                 useExtraTime();
             }
         });
-
         btnBoxReveal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
                 useBoxReveal();
             }
         });
     }
 
-    /** Resets score, progress, and timer, then starts the first memorize round. */
     private void startLevel() {
         gameOver = false;
         isPlaying = false;
@@ -157,30 +168,17 @@ public class GameplayActivity extends AppCompatActivity {
         score = 0;
         streak = 0;
         coinsEarnedThisLevel = 0;
-        timeLeftMs = LEVEL_TIME_MS;
+        applyDifficultySettings();
 
         tvScore.setText("0");
         tvStreak.setText("0");
         tvTimer.setText(formatTime(timeLeftMs));
+        updateHeader();
         updateProgress();
-
-        if (timer != null) {
-            timer.cancel();
-        }
-        if (memorizeTimer != null) {
-            memorizeTimer.cancel();
-        }
-        handler.removeCallbacksAndMessages(null);
-
+        cancelTimers();
         startMemorizeRound();
     }
 
-    /**
-     * MEMORIZE PHASE
-     * Picks a random correct box, shows it for 3 seconds,
-     * and blocks all taps so the player can only look.
-     * A 3-2-1 countdown tells the player when this phase ends.
-     */
     private void startMemorizeRound() {
         isMemorizing = true;
         isPlaying = false;
@@ -191,19 +189,16 @@ public class GameplayActivity extends AppCompatActivity {
         setPowerUpsEnabled(false);
 
         tvMemorizeCount.setVisibility(View.VISIBLE);
-        updateMemorizeCountdown(3);
+        updateMemorizeCountdown(memorizeTimeMs / 1000);
         boxButtons[correctBox].setBackgroundResource(R.drawable.bg_box_correct);
-
         startMemorizeCountdown();
     }
 
-    /** Updates the big 3-2-1 number every second during memorize. */
     private void startMemorizeCountdown() {
         if (memorizeTimer != null) {
             memorizeTimer.cancel();
         }
-
-        memorizeTimer = new CountDownTimer(MEMORIZE_TIME_MS, 1000) {
+        memorizeTimer = new CountDownTimer(memorizeTimeMs, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 int secondsLeft = (int) Math.ceil(millisUntilFinished / 1000.0);
@@ -229,33 +224,24 @@ public class GameplayActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * COVER / SHUFFLE PHASE
-     * All boxes look the same again. Then the countdown timer starts.
-     */
     private void coverBoxesAndStartPlay() {
         if (gameOver) {
             return;
         }
-
         isMemorizing = false;
         isPlaying = true;
-
         resetAllBoxes();
         setGridEnabled(true);
         setPowerUpsEnabled(true);
-
         tvMemorizeCount.setVisibility(View.GONE);
         tvStatus.setText(R.string.choose_box);
         startTimer();
     }
 
-    /** Starts or restarts CountDownTimer using the remaining milliseconds. */
     private void startTimer() {
         if (timer != null) {
             timer.cancel();
         }
-
         timer = new CountDownTimer(timeLeftMs, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -267,23 +253,17 @@ public class GameplayActivity extends AppCompatActivity {
             public void onFinish() {
                 tvTimer.setText("0:00");
                 if (!gameOver) {
-                    endGameByTimeout();
+                    loseLife("Time's up!");
                 }
             }
         };
         timer.start();
     }
 
-    /**
-     * TAP PHASE
-     * Correct box: +150 coins and more progress.
-     * Wrong box: lose 5 seconds and show "Wrong Box!".
-     */
     private void onBoxClicked(int boxIndex) {
         if (gameOver || isMemorizing || !isPlaying) {
             return;
         }
-
         if (boxIndex == correctBox) {
             handleCorrectBox(boxIndex);
         } else {
@@ -297,94 +277,128 @@ public class GameplayActivity extends AppCompatActivity {
             timer.cancel();
         }
 
+        SoundPlayer.playCorrect(this);
         boxButtons[boxIndex].setBackgroundResource(R.drawable.bg_box_correct);
         Toast.makeText(this, R.string.correct_box, Toast.LENGTH_SHORT).show();
 
         correctHits = correctHits + 1;
         streak = streak + 1;
-        score = score + 10 + (streak * 2);
-        coinsEarnedThisLevel = coinsEarnedThisLevel + CORRECT_COINS;
-
-        GamePrefs.addCoins(this, CORRECT_COINS);
+        score = score + 100 + (streak * 10);
+        coinsEarnedThisLevel = coinsEarnedThisLevel + coinReward;
+        GamePrefs.addCoins(this, coinReward);
         updateCoinsText();
         tvScore.setText(String.valueOf(score));
         tvStreak.setText(String.valueOf(streak));
         updateProgress();
 
-        // Level is finished when the player hits the target (progress 100%)
-        if (correctHits >= TARGET_HITS) {
+        if (correctHits >= targetHits) {
             winLevel();
         } else {
-            // Next memorize round, timer continues from remaining time
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     startMemorizeRound();
                 }
-            }, 800);
+            }, 700);
         }
     }
 
     private void handleWrongBox(int boxIndex) {
+        SoundPlayer.playWrong(this);
         boxButtons[boxIndex].setBackgroundResource(R.drawable.bg_box_wrong);
         boxButtons[boxIndex].setEnabled(false);
         streak = 0;
         tvStreak.setText("0");
-        Toast.makeText(this, R.string.wrong_box, Toast.LENGTH_SHORT).show();
 
-        // Penalty: remove 5 seconds from the countdown
         timeLeftMs = timeLeftMs - WRONG_PENALTY_MS;
         if (timeLeftMs <= 0) {
             tvTimer.setText("0:00");
-            endGameByTimeout();
+            loseLife("Time's up!");
+            return;
+        }
+        tvTimer.setText(formatTime(timeLeftMs));
+        loseLife("Wrong Box!");
+        if (!gameOver) {
+            startTimer();
+        }
+    }
+
+    /** Removes 1 life. If no lives remain, the game ends. */
+    private void loseLife(String reason) {
+        if (gameOver) {
+            return;
+        }
+        lives = lives - 1;
+        updateHeader();
+
+        if (lives <= 0) {
+            endGame(reason);
             return;
         }
 
-        tvTimer.setText(formatTime(timeLeftMs));
-        startTimer();
+        Toast.makeText(this, reason + "  Lives left: " + lives, Toast.LENGTH_SHORT).show();
+        if ("Time's up!".equals(reason)) {
+            timeLeftMs = levelTimeMs;
+            tvTimer.setText(formatTime(timeLeftMs));
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!gameOver) {
+                        startMemorizeRound();
+                    }
+                }
+            }, 800);
+        }
     }
 
-    /** Shows the Level Complete dialog and unlocks the next level. */
     private void winLevel() {
         gameOver = true;
         isPlaying = false;
-        if (timer != null) {
-            timer.cancel();
-        }
+        cancelTimers();
 
-        GamePrefs.unlockLevel(this, currentLevel + 1);
+        int finalScore = calculateFinalScore();
+        GamePrefs.unlockStage(this, difficulty, currentStage + 1);
+        GamePrefs.addLeaderboardEntry(this, GamePrefs.getUsername(this), finalScore, difficulty);
         progressBar.setProgress(100);
-        showLevelCompleteDialog(coinsEarnedThisLevel);
+        SoundPlayer.playWin(this);
+        showLevelCompleteDialog(coinsEarnedThisLevel, finalScore);
     }
 
-    private void endGameByTimeout() {
+    private void endGame(String reason) {
         gameOver = true;
         isPlaying = false;
-        if (timer != null) {
-            timer.cancel();
-        }
+        cancelTimers();
         setGridEnabled(false);
         setPowerUpsEnabled(false);
-        tvStatus.setText("Time's up!");
-        Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show();
+        tvStatus.setText(R.string.game_over);
+        SoundPlayer.playGameOver(this);
+
+        int finalScore = calculateFinalScore();
+        GamePrefs.addLeaderboardEntry(this, GamePrefs.getUsername(this), finalScore, difficulty);
+        showGameOverDialog(reason, finalScore);
+    }
+
+    /** Score = points + leftover time + leftover lives + difficulty bonus. */
+    private int calculateFinalScore() {
+        int secondsLeft = Math.max(0, timeLeftMs / 1000);
+        return score + (secondsLeft * 5) + (Math.max(lives, 0) * 40)
+                + DifficultyConfig.getScoreBonus(difficulty);
     }
 
     private void useHint() {
         if (!canUsePowerUp()) {
             return;
         }
-
         if (GamePrefs.getHints(this) > 0) {
             GamePrefs.useHint(this);
             highlightCorrectBox();
             return;
         }
-
         if (GamePrefs.spendCoins(this, 50)) {
             updateCoinsText();
             highlightCorrectBox();
         } else {
-            Toast.makeText(this, "Not enough coins for a Hint.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Not enough coins or hints.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -397,31 +411,26 @@ public class GameplayActivity extends AppCompatActivity {
         if (!canUsePowerUp()) {
             return;
         }
-
-        boolean usedSavedItem = GamePrefs.getExtraTime(this) > 0 && GamePrefs.useExtraTime(this);
-        if (!usedSavedItem && !GamePrefs.spendCoins(this, 100)) {
+        boolean usedSaved = GamePrefs.getExtraTime(this) > 0 && GamePrefs.useExtraTime(this);
+        if (!usedSaved && !GamePrefs.spendCoins(this, 100)) {
             Toast.makeText(this, "Not enough coins for Extra Time.", Toast.LENGTH_SHORT).show();
             return;
         }
-
         updateCoinsText();
         timeLeftMs = timeLeftMs + 20000;
         startTimer();
         Toast.makeText(this, "Added 20 seconds!", Toast.LENGTH_SHORT).show();
     }
 
-    /** Reveals 3 wrong boxes so it is easier to find the correct one. */
     private void useBoxReveal() {
         if (!canUsePowerUp()) {
             return;
         }
-
-        boolean usedSavedItem = GamePrefs.getBoxReveal(this) > 0 && GamePrefs.useBoxReveal(this);
-        if (!usedSavedItem && !GamePrefs.spendCoins(this, 150)) {
+        boolean usedSaved = GamePrefs.getBoxReveal(this) > 0 && GamePrefs.useBoxReveal(this);
+        if (!usedSaved && !GamePrefs.spendCoins(this, 150)) {
             Toast.makeText(this, "Not enough coins for Box Reveal.", Toast.LENGTH_SHORT).show();
             return;
         }
-
         updateCoinsText();
 
         ArrayList<Integer> wrongBoxes = new ArrayList<>();
@@ -431,14 +440,12 @@ public class GameplayActivity extends AppCompatActivity {
             }
         }
         Collections.shuffle(wrongBoxes);
-
         int revealCount = Math.min(3, wrongBoxes.size());
         for (int i = 0; i < revealCount; i++) {
             int index = wrongBoxes.get(i);
             boxButtons[index].setBackgroundResource(R.drawable.bg_box_wrong);
             boxButtons[index].setEnabled(false);
         }
-
         Toast.makeText(this, "3 boxes revealed!", Toast.LENGTH_SHORT).show();
     }
 
@@ -446,7 +453,7 @@ public class GameplayActivity extends AppCompatActivity {
         return !gameOver && isPlaying && !isMemorizing;
     }
 
-    private void showLevelCompleteDialog(int coinsEarned) {
+    private void showLevelCompleteDialog(int coinsEarned, int finalScore) {
         Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_level_complete);
@@ -456,6 +463,7 @@ public class GameplayActivity extends AppCompatActivity {
         }
 
         TextView tvCoinsEarned = dialog.findViewById(R.id.tvCoinsEarned);
+        TextView tvDialogTitle = dialog.findViewById(R.id.tvDialogTitle);
         ImageView ivStar1 = dialog.findViewById(R.id.ivStar1);
         ImageView ivStar2 = dialog.findViewById(R.id.ivStar2);
         ImageView ivStar3 = dialog.findViewById(R.id.ivStar3);
@@ -463,41 +471,83 @@ public class GameplayActivity extends AppCompatActivity {
         Button btnNext = dialog.findViewById(R.id.btnNext);
         Button btnReplay = dialog.findViewById(R.id.btnReplay);
 
-        tvCoinsEarned.setText("+" + coinsEarned + " Coins");
+        tvDialogTitle.setText("Stage Complete!");
+        tvCoinsEarned.setText("+" + coinsEarned + " Coins   •   Score " + finalScore);
 
-        // Stars depend on how much time is left
         int secondsLeft = timeLeftMs / 1000;
         ivStar1.setImageResource(R.drawable.ic_star);
-        ivStar2.setImageResource(secondsLeft >= 15 ? R.drawable.ic_star : R.drawable.ic_star_empty);
-        ivStar3.setImageResource(secondsLeft >= 30 ? R.drawable.ic_star : R.drawable.ic_star_empty);
+        ivStar2.setImageResource(secondsLeft >= 10 ? R.drawable.ic_star : R.drawable.ic_star_empty);
+        ivStar3.setImageResource(secondsLeft >= 20 ? R.drawable.ic_star : R.drawable.ic_star_empty);
 
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
                 dialog.dismiss();
                 finish();
             }
         });
-
         btnReplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
                 dialog.dismiss();
                 startLevel();
             }
         });
-
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
                 dialog.dismiss();
+                if (currentStage >= DifficultyConfig.STAGE_COUNT) {
+                    Toast.makeText(GameplayActivity.this, "All 15 stages done!", Toast.LENGTH_LONG).show();
+                    finish();
+                    return;
+                }
                 Intent intent = new Intent(GameplayActivity.this, GameplayActivity.class);
-                intent.putExtra("level", currentLevel + 1);
+                intent.putExtra("difficulty", difficulty);
+                intent.putExtra("stage", currentStage + 1);
                 startActivity(intent);
                 finish();
             }
         });
+        dialog.show();
+    }
 
+    private void showGameOverDialog(String reason, int finalScore) {
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_game_over);
+        dialog.setCancelable(false);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        TextView tvScore = dialog.findViewById(R.id.tvGameOverScore);
+        TextView tvReason = dialog.findViewById(R.id.tvGameOverReason);
+        Button btnHome = dialog.findViewById(R.id.btnGameOverHome);
+        Button btnRetry = dialog.findViewById(R.id.btnGameOverRetry);
+
+        tvScore.setText("Score: " + finalScore);
+        tvReason.setText(reason + " You ran out of lives.");
+
+        btnHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
+                dialog.dismiss();
+                finish();
+            }
+        });
+        btnRetry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SoundPlayer.playClick(GameplayActivity.this);
+                dialog.dismiss();
+                startLevel();
+            }
+        });
         dialog.show();
     }
 
@@ -520,25 +570,26 @@ public class GameplayActivity extends AppCompatActivity {
     }
 
     private void updateProgress() {
-        int progress = (correctHits * 100) / TARGET_HITS;
+        int progress = (correctHits * 100) / targetHits;
         progressBar.setProgress(progress);
-        tvTarget.setText(correctHits + " / " + TARGET_HITS);
+        tvTarget.setText(correctHits + " / " + targetHits);
+    }
+
+    private void updateHeader() {
+        tvLevel.setText(difficulty + "  " + currentStage + "/" + DifficultyConfig.STAGE_COUNT);
+        tvLives.setText("x " + Math.max(lives, 0));
     }
 
     private void updateCoinsText() {
         tvCoins.setText(String.valueOf(GamePrefs.getCoins(this)));
     }
 
-    /** Turns milliseconds into a 0:45 style text. */
     private String formatTime(int milliseconds) {
         int seconds = Math.max(0, milliseconds / 1000);
         return "0:" + String.format("%02d", seconds);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // Stop timer and delayed memorize callback when the screen closes
+    private void cancelTimers() {
         if (timer != null) {
             timer.cancel();
         }
@@ -546,5 +597,11 @@ public class GameplayActivity extends AppCompatActivity {
             memorizeTimer.cancel();
         }
         handler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cancelTimers();
     }
 }

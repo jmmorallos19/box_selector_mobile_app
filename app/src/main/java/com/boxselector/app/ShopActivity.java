@@ -34,6 +34,7 @@ public class ShopActivity extends AppCompatActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SoundPlayer.playClick(ShopActivity.this);
                 finish();
             }
         });
@@ -62,6 +63,7 @@ public class ShopActivity extends AppCompatActivity {
 
     /** Deducts coins and saves the purchased power-up if the player can afford it. */
     private void buyItem(int cost, String itemName) {
+        SoundPlayer.playClick(this);
         if (GamePrefs.spendCoins(this, cost)) {
             if (itemName.equals("Hint")) {
                 GamePrefs.addHint(this);
