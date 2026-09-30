@@ -36,7 +36,8 @@
         android:background="@drawable/bg_button_green"
         android:text="@string/create_challenge"
         android:textColor="@color/white"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvEmptyChallenges"

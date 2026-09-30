@@ -46,9 +46,8 @@ public class ChallengeDetailActivity extends AppCompatActivity {
         }
         tvAuthor.setText("Created by " + challenge.createdBy);
 
-        boolean isOwner = GamePrefs.getUsername(this).equals(challenge.createdBy);
-        btnEdit.setVisibility(isOwner ? View.VISIBLE : View.GONE);
-        btnDelete.setVisibility(isOwner ? View.VISIBLE : View.GONE);
+        btnEdit.setVisibility(View.GONE);
+        btnDelete.setVisibility(View.GONE);
 
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,26 +65,6 @@ public class ChallengeDetailActivity extends AppCompatActivity {
                 intent.putExtra("difficulty", challenge.toGameplayDifficulty());
                 intent.putExtra("stage", 1);
                 startActivity(intent);
-            }
-        });
-
-        btnEdit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SoundPlayer.playClick(ChallengeDetailActivity.this);
-                Intent intent = new Intent(ChallengeDetailActivity.this, ChallengeFormActivity.class);
-                intent.putExtra("challengeId", challenge.id);
-                startActivity(intent);
-            }
-        });
-
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SoundPlayer.playClick(ChallengeDetailActivity.this);
-                GamePrefs.deleteChallenge(ChallengeDetailActivity.this, challenge.id);
-                Toast.makeText(ChallengeDetailActivity.this, "Challenge deleted.", Toast.LENGTH_SHORT).show();
-                finish();
             }
         });
     }

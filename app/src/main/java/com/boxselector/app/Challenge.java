@@ -51,6 +51,12 @@ public class Challenge {
 
     /** Maps challenge difficulty to gameplay settings. */
     public String toGameplayDifficulty() {
+        if (MEDIUM.equals(difficulty)) {
+            return DifficultyConfig.NORMAL;
+        }
+        if (INSANE.equals(difficulty)) {
+            return DifficultyConfig.NIGHTMARE;
+        }
         return difficulty;
     }
 }

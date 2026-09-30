@@ -36,13 +36,7 @@ public class ChallengeListActivity extends AppCompatActivity {
         });
 
         Button btnCreate = findViewById(R.id.btnCreateChallenge);
-        btnCreate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SoundPlayer.playClick(ChallengeListActivity.this);
-                startActivity(new Intent(ChallengeListActivity.this, ChallengeFormActivity.class));
-            }
-        });
+        btnCreate.setVisibility(View.GONE);
     }
 
     @Override

@@ -34,67 +34,22 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:gravity="center"
-        android:text="Start with Easy. Each difficulty has 15 stages."
+        android:text="Choose a difficulty, then pick a stage. Easy is open first."
         android:textColor="@color/white"
         android:textSize="14sp" />
 
-    <Button
-        android:id="@+id/btnEasy"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="20dp"
-        android:background="@drawable/bg_button_green"
-        android:text="EASY  •  5 Lives"
-        android:textColor="@color/white"
-        android:textStyle="bold" />
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1">
 
-    <Button
-        android:id="@+id/btnMedium"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/bg_button_yellow"
-        android:text="MEDIUM  •  4 Lives"
-        android:textColor="@color/text_dark"
-        android:textStyle="bold" />
-
-    <Button
-        android:id="@+id/btnHard"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/bg_button_white"
-        android:text="HARD  •  3 Lives"
-        android:textColor="@color/deep_blue"
-        android:textStyle="bold" />
-
-    <Button
-        android:id="@+id/btnExpert"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/bg_button_white"
-        android:text="EXPERT  •  2 Lives"
-        android:textColor="@color/deep_blue"
-        android:textStyle="bold" />
-
-    <Button
-        android:id="@+id/btnExtreme"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/bg_box_wrong"
-        android:text="EXTREME  •  1 Life"
-        android:textColor="@color/white"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:text="Want Insane or Master? Create a Challenge."
-        android:textColor="@color/yellow_accent"
-        android:textSize="13sp" />
+        <LinearLayout
+            android:id="@+id/layoutDifficulties"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="12dp" />
+    </ScrollView>
 
 </LinearLayout>

@@ -42,7 +42,7 @@ public class ShopActivity extends AppCompatActivity {
         btnBuyHint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                buyItem(50, "Hint");
+                buyItem(DifficultyConfig.HINT_COST, "Hint");
             }
         });
 

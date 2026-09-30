@@ -1,139 +1,194 @@
 package com.boxselector.app;
 
 /**
- * Settings for each difficulty.
- * Later names are faster, give fewer lives, and award more points.
+ * Eight difficulties for Box Selector.
+ * Harder modes mean more boxes to remember, a shorter look, and fewer lives.
  */
 public class DifficultyConfig {
 
-    public static final String BEGINNER = "Beginner";
     public static final String EASY = "Easy";
-    public static final String MEDIUM = "Medium";
     public static final String NORMAL = "Normal";
     public static final String HARD = "Hard";
     public static final String EXPERT = "Expert";
     public static final String EXTREME = "Extreme";
-    public static final String INSANE = "Insane";
     public static final String MASTER = "Master";
+    public static final String NIGHTMARE = "Nightmare";
+    public static final String IMPOSSIBLE = "Impossible";
     public static final int STAGE_COUNT = 15;
+    public static final int HINT_COST = 25;
+    public static final int EXTRA_TIME_SECONDS = 5;
 
     public static String[] allNames() {
         return new String[]{
-                BEGINNER, EASY, MEDIUM, NORMAL, HARD, EXPERT, EXTREME, INSANE, MASTER
+                EASY, NORMAL, HARD, EXPERT, EXTREME, MASTER, NIGHTMARE, IMPOSSIBLE
         };
     }
 
-    public static int getStartLives(String difficulty) {
-        if (BEGINNER.equals(difficulty)) {
-            return 6;
-        } else if (EASY.equals(difficulty)) {
-            return 5;
-        } else if (MEDIUM.equals(difficulty) || NORMAL.equals(difficulty)) {
+    public static int getIndex(String difficulty) {
+        String[] names = allNames();
+        for (int i = 0; i < names.length; i++) {
+            if (names[i].equals(difficulty)) {
+                return i;
+            }
+        }
+        return 1;
+    }
+
+    public static String getPrevious(String difficulty) {
+        int index = getIndex(difficulty);
+        if (index <= 0) {
+            return null;
+        }
+        return allNames()[index - 1];
+    }
+
+    public static int getLifeLimit(String difficulty) {
+        if (EASY.equals(difficulty)) {
             return 4;
-        } else if (HARD.equals(difficulty)) {
+        } else if (NORMAL.equals(difficulty)) {
             return 3;
-        } else if (EXPERT.equals(difficulty)) {
+        } else if (HARD.equals(difficulty) || EXPERT.equals(difficulty)) {
             return 2;
         } else {
             return 1;
         }
     }
 
-    public static int getTimeMs(String difficulty, int stage) {
-        int base;
-        if (BEGINNER.equals(difficulty)) {
-            base = 55000;
-        } else if (EASY.equals(difficulty)) {
-            base = 50000;
-        } else if (MEDIUM.equals(difficulty) || NORMAL.equals(difficulty)) {
-            base = 45000;
+    /** How many green boxes the player must remember at once. */
+    public static int getBoxCount(String difficulty, int stage) {
+        if (EASY.equals(difficulty)) {
+            return stage >= 9 ? 2 : 1;
+        } else if (NORMAL.equals(difficulty)) {
+            return stage >= 6 ? 2 : 1;
         } else if (HARD.equals(difficulty)) {
-            base = 35000;
+            return stage >= 11 ? 3 : 2;
         } else if (EXPERT.equals(difficulty)) {
-            base = 30000;
+            return stage >= 8 ? 3 : 2;
         } else if (EXTREME.equals(difficulty)) {
-            base = 25000;
-        } else if (INSANE.equals(difficulty)) {
-            base = 20000;
+            return 3;
+        } else if (MASTER.equals(difficulty)) {
+            return stage >= 10 ? 4 : 3;
+        } else if (NIGHTMARE.equals(difficulty)) {
+            return 4;
         } else {
-            base = 15000;
+            return stage >= 9 ? 5 : 4;
         }
-        int reduced = base - ((stage - 1) * 1000);
-        int minTime = MASTER.equals(difficulty) || INSANE.equals(difficulty) ? 10000 : 15000;
-        if (reduced < minTime) {
-            reduced = minTime;
+    }
+
+    /** How many correct rounds are needed to clear the stage. */
+    public static int getRoundsToClear(String difficulty, int stage) {
+        if (EASY.equals(difficulty)) {
+            return 2 + (stage / 5);
+        } else if (NORMAL.equals(difficulty)) {
+            return 3 + (stage / 5);
+        } else if (HARD.equals(difficulty)) {
+            return 3 + (stage / 4);
+        } else if (EXPERT.equals(difficulty)) {
+            return 4 + (stage / 4);
+        } else if (EXTREME.equals(difficulty)) {
+            return 4 + (stage / 3);
+        } else if (MASTER.equals(difficulty)) {
+            return 5 + (stage / 3);
+        } else if (NIGHTMARE.equals(difficulty)) {
+            return 5 + (stage / 2);
+        } else {
+            return 6 + (stage / 2);
         }
-        return reduced;
     }
 
     public static int getMemorizeMs(String difficulty) {
-        if (BEGINNER.equals(difficulty)) {
-            return 5000;
-        } else if (EASY.equals(difficulty) || MEDIUM.equals(difficulty) || NORMAL.equals(difficulty)) {
+        if (EASY.equals(difficulty)) {
             return 4000;
+        } else if (NORMAL.equals(difficulty)) {
+            return 3500;
         } else if (HARD.equals(difficulty)) {
             return 3000;
-        } else if (EXPERT.equals(difficulty) || EXTREME.equals(difficulty)) {
-            return 2000;
-        } else {
-            return 1000;
-        }
-    }
-
-    public static int getTargetHits(String difficulty, int stage) {
-        int base;
-        if (BEGINNER.equals(difficulty) || EASY.equals(difficulty)) {
-            base = 2;
-        } else if (MEDIUM.equals(difficulty) || NORMAL.equals(difficulty) || HARD.equals(difficulty)) {
-            base = 3;
-        } else if (EXPERT.equals(difficulty) || EXTREME.equals(difficulty)) {
-            base = 4;
-        } else {
-            base = 5;
-        }
-        if (stage >= 11) {
-            base = base + 1;
-        }
-        return base;
-    }
-
-    public static int getCoinReward(String difficulty) {
-        if (BEGINNER.equals(difficulty)) {
-            return 80;
-        } else if (EASY.equals(difficulty)) {
-            return 100;
-        } else if (MEDIUM.equals(difficulty) || NORMAL.equals(difficulty)) {
-            return 150;
-        } else if (HARD.equals(difficulty)) {
-            return 200;
         } else if (EXPERT.equals(difficulty)) {
-            return 250;
+            return 2200;
         } else if (EXTREME.equals(difficulty)) {
-            return 300;
-        } else if (INSANE.equals(difficulty)) {
-            return 350;
+            return 1800;
+        } else if (MASTER.equals(difficulty)) {
+            return 1200;
+        } else if (NIGHTMARE.equals(difficulty)) {
+            return 1000;
         } else {
-            return 400;
+            return 800;
         }
     }
 
-    public static int getScoreBonus(String difficulty) {
-        if (BEGINNER.equals(difficulty)) {
-            return 30;
-        } else if (EASY.equals(difficulty)) {
-            return 50;
-        } else if (MEDIUM.equals(difficulty) || NORMAL.equals(difficulty)) {
-            return 100;
-        } else if (HARD.equals(difficulty)) {
-            return 200;
-        } else if (EXPERT.equals(difficulty)) {
-            return 350;
-        } else if (EXTREME.equals(difficulty)) {
-            return 500;
-        } else if (INSANE.equals(difficulty)) {
-            return 700;
+    /**
+     * 0 = boxes stay still while you look.
+     * 1 = they jump once.
+     * 2 = they keep jumping.
+     */
+    public static int getMoveStyle(String difficulty) {
+        if (EASY.equals(difficulty) || NORMAL.equals(difficulty) || HARD.equals(difficulty)) {
+            return 0;
+        } else if (EXPERT.equals(difficulty) || EXTREME.equals(difficulty)) {
+            return 1;
         } else {
-            return 1000;
+            return 2;
         }
+    }
+
+    public static int getTimerSeconds(String difficulty, int stage) {
+        int seconds;
+        if (EASY.equals(difficulty)) {
+            seconds = 30 - (stage / 3);
+        } else if (NORMAL.equals(difficulty)) {
+            seconds = 26 - (stage / 3);
+        } else if (HARD.equals(difficulty)) {
+            seconds = 22 - (stage / 3);
+        } else if (EXPERT.equals(difficulty)) {
+            seconds = 18 - (stage / 3);
+        } else if (EXTREME.equals(difficulty)) {
+            seconds = 15 - (stage / 3);
+        } else if (MASTER.equals(difficulty)) {
+            seconds = 12 - (stage / 3);
+        } else if (NIGHTMARE.equals(difficulty)) {
+            seconds = 10 - (stage / 3);
+        } else {
+            seconds = 8 - (stage / 3);
+        }
+        int minTime = 6 + (7 - getIndex(difficulty));
+        if (minTime < 6) {
+            minTime = 6;
+        }
+        if (seconds < minTime) {
+            seconds = minTime;
+        }
+        return seconds;
+    }
+
+    public static int getTimeMs(String difficulty, int stage) {
+        return getTimerSeconds(difficulty, stage) * 1000;
+    }
+
+    public static int getClearScore(String difficulty, int stage, int correctHits, int secondsLeft) {
+        int inner = (correctHits * 10) + (secondsLeft * 2) + (stage * 5);
+        return inner * (getIndex(difficulty) + 1);
+    }
+
+    public static int getClearCoins(String difficulty, int stage, int secondsLeft) {
+        return 8 + (getIndex(difficulty) * 4) + (stage / 3) + (secondsLeft / 5);
+    }
+
+    public static String getMoveLabel(String difficulty) {
+        int style = getMoveStyle(difficulty);
+        if (style == 0) {
+            return "boxes stay still";
+        } else if (style == 1) {
+            return "boxes jump once";
+        } else {
+            return "boxes keep moving";
+        }
+    }
+
+    public static String getButtonDescription(String difficulty) {
+        int lives = getLifeLimit(difficulty);
+        int look = getMemorizeMs(difficulty) / 1000;
+        int boxes = getBoxCount(difficulty, 1);
+        String boxWord = boxes == 1 ? "1 box" : boxes + " boxes";
+        return lives + " lives · " + look + "s look · " + boxWord + ", " + getMoveLabel(difficulty);
     }
 }

@@ -176,6 +176,38 @@ public class GamePrefs {
         }
     }
 
+    public static void markDifficultyComplete(Context context, String difficulty) {
+        getPrefs(context).edit().putBoolean(userKey(context, "complete_" + difficulty), true).apply();
+    }
+
+    public static boolean isDifficultyComplete(Context context, String difficulty) {
+        return getPrefs(context).getBoolean(userKey(context, "complete_" + difficulty), false);
+    }
+
+    public static boolean isDifficultyUnlocked(Context context, String difficulty) {
+        String previous = DifficultyConfig.getPrevious(difficulty);
+        if (previous == null) {
+            return true;
+        }
+        return isDifficultyComplete(context, previous);
+    }
+
+    public static int getSavedLives(Context context, String difficulty) {
+        int start = DifficultyConfig.getLifeLimit(difficulty);
+        return getPrefs(context).getInt(userKey(context, "lives_" + difficulty), start);
+    }
+
+    public static void setSavedLives(Context context, String difficulty, int lives) {
+        if (lives < 0) {
+            lives = 0;
+        }
+        getPrefs(context).edit().putInt(userKey(context, "lives_" + difficulty), lives).apply();
+    }
+
+    public static void restoreStartingLives(Context context, String difficulty) {
+        setSavedLives(context, difficulty, DifficultyConfig.getLifeLimit(difficulty));
+    }
+
     public static int getHighestLevel(Context context) {
         return getHighestStage(context, DifficultyConfig.NORMAL);
     }

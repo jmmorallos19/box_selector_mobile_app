@@ -15,13 +15,20 @@ import androidx.core.content.ContextCompat;
 /** Shows 15 stages for the selected difficulty. */
 public class LevelsActivity extends AppCompatActivity {
 
+    private String selected = DifficultyConfig.EASY;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_levels);
 
-        final String difficulty = getIntent().getStringExtra("difficulty");
-        final String selected = difficulty == null ? DifficultyConfig.NORMAL : difficulty;
+        String difficulty = getIntent().getStringExtra("difficulty");
+        selected = difficulty == null ? DifficultyConfig.EASY : difficulty;
+        if (!GamePrefs.isDifficultyUnlocked(this, selected)) {
+            Toast.makeText(this, "Finish the previous difficulty first.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         TextView tvTitle = findViewById(R.id.tvLevelsTitle);
         tvTitle.setText(selected.toUpperCase());
@@ -34,8 +41,19 @@ public class LevelsActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showStages();
+    }
+
+    private void showStages() {
         GridLayout grid = findViewById(R.id.gridLevels);
+        if (grid == null) {
+            return;
+        }
         grid.removeAllViews();
         int unlocked = GamePrefs.getHighestStage(this, selected);
 
