@@ -54,25 +54,19 @@ public class DifficultyConfig {
         }
     }
 
-    /** How many green boxes the player must remember at once. */
+    /**
+     * How many green boxes the player must remember at once.
+     * Higher difficulty = more boxes. Later stages add 1 more, max 8 of 9.
+     */
     public static int getBoxCount(String difficulty, int stage) {
-        if (EASY.equals(difficulty)) {
-            return stage >= 9 ? 2 : 1;
-        } else if (NORMAL.equals(difficulty)) {
-            return stage >= 6 ? 2 : 1;
-        } else if (HARD.equals(difficulty)) {
-            return stage >= 11 ? 3 : 2;
-        } else if (EXPERT.equals(difficulty)) {
-            return stage >= 8 ? 3 : 2;
-        } else if (EXTREME.equals(difficulty)) {
-            return 3;
-        } else if (MASTER.equals(difficulty)) {
-            return stage >= 10 ? 4 : 3;
-        } else if (NIGHTMARE.equals(difficulty)) {
-            return 4;
-        } else {
-            return stage >= 9 ? 5 : 4;
+        int boxes = getIndex(difficulty) + 1;
+        if (stage >= 11) {
+            boxes = boxes + 1;
         }
+        if (boxes > 8) {
+            boxes = 8;
+        }
+        return boxes;
     }
 
     /** How many correct rounds are needed to clear the stage. */
@@ -188,7 +182,13 @@ public class DifficultyConfig {
         int lives = getLifeLimit(difficulty);
         int look = getMemorizeMs(difficulty) / 1000;
         int boxes = getBoxCount(difficulty, 1);
-        String boxWord = boxes == 1 ? "1 box" : boxes + " boxes";
+        int lateBoxes = getBoxCount(difficulty, 15);
+        String boxWord;
+        if (boxes == lateBoxes) {
+            boxWord = boxes == 1 ? "1 box" : boxes + " boxes";
+        } else {
+            boxWord = boxes + "–" + lateBoxes + " boxes";
+        }
         return lives + " lives · " + look + "s look · " + boxWord + ", " + getMoveLabel(difficulty);
     }
 }
