@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         tvCoins = findViewById(R.id.tvCoins);
         tvUsername = findViewById(R.id.tvUsername);
         Button btnPlay = findViewById(R.id.btnPlay);
+        Button btnChallenges = findViewById(R.id.btnChallenges);
         Button btnLevels = findViewById(R.id.btnLevels);
         Button btnShop = findViewById(R.id.btnShop);
         Button btnCollection = findViewById(R.id.btnCollection);
@@ -42,6 +43,14 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, DifficultyActivity.class);
                 intent.putExtra("selectStage", false);
                 startActivity(intent);
+            }
+        });
+
+        btnChallenges.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SoundPlayer.playClick(MainActivity.this);
+                startActivity(new Intent(MainActivity.this, ChallengeListActivity.class));
             }
         });
 

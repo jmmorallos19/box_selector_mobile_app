@@ -20,6 +20,8 @@ public class GamePrefs {
     private static final String KEY_SOUND = "sound_on";
     private static final String KEY_MUSIC = "music_on";
     private static final String KEY_LEADERBOARD = "leaderboard";
+    private static final String KEY_CHALLENGES = "challenges";
+    private static final String KEY_NEXT_CHALLENGE_ID = "next_challenge_id";
     private static final int STARTING_COINS = 200;
 
     private static SharedPreferences getPrefs(Context context) {
@@ -271,6 +273,143 @@ public class GamePrefs {
 
     public static void setMusicOn(Context context, boolean on) {
         getPrefs(context).edit().putBoolean(KEY_MUSIC, on).apply();
+    }
+
+    // ---------- Challenges (local database via SharedPreferences) ----------
+
+    /** Returns all saved challenges. This is the app's challenge list API. */
+    public static List<Challenge> getChallenges(Context context) {
+        List<Challenge> challenges = new ArrayList<>();
+        String raw = getPrefs(context).getString(KEY_CHALLENGES, "");
+        if (raw.isEmpty()) {
+            return challenges;
+        }
+
+        String[] rows = raw.split("\\|\\|\\|");
+        for (String row : rows) {
+            Challenge challenge = parseChallenge(row);
+            if (challenge != null) {
+                challenges.add(challenge);
+            }
+        }
+        return challenges;
+    }
+
+    public static Challenge getChallengeById(Context context, int id) {
+        List<Challenge> challenges = getChallenges(context);
+        for (int i = 0; i < challenges.size(); i++) {
+            if (challenges.get(i).id == id) {
+                return challenges.get(i);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates or updates a challenge after validating difficulty.
+     * Returns the saved challenge, or null if validation failed.
+     */
+    public static Challenge saveChallenge(Context context, Challenge challenge) {
+        if (challenge == null || challenge.title == null || challenge.title.trim().isEmpty()) {
+            return null;
+        }
+        if (!Challenge.isValidDifficulty(challenge.difficulty)) {
+            return null;
+        }
+
+        challenge.title = challenge.title.trim();
+        if (challenge.description == null) {
+            challenge.description = "";
+        } else {
+            challenge.description = challenge.description.trim();
+        }
+
+        List<Challenge> challenges = getChallenges(context);
+        if (challenge.id <= 0) {
+            int nextId = getPrefs(context).getInt(KEY_NEXT_CHALLENGE_ID, 1);
+            challenge.id = nextId;
+            getPrefs(context).edit().putInt(KEY_NEXT_CHALLENGE_ID, nextId + 1).apply();
+            challenges.add(challenge);
+        } else {
+            boolean found = false;
+            for (int i = 0; i < challenges.size(); i++) {
+                if (challenges.get(i).id == challenge.id) {
+                    challenges.set(i, challenge);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                challenges.add(challenge);
+            }
+        }
+
+        writeChallenges(context, challenges);
+        return challenge;
+    }
+
+    public static boolean deleteChallenge(Context context, int id) {
+        List<Challenge> challenges = getChallenges(context);
+        boolean removed = false;
+        for (int i = 0; i < challenges.size(); i++) {
+            if (challenges.get(i).id == id) {
+                challenges.remove(i);
+                removed = true;
+                break;
+            }
+        }
+        if (removed) {
+            writeChallenges(context, challenges);
+        }
+        return removed;
+    }
+
+    private static void writeChallenges(Context context, List<Challenge> challenges) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < challenges.size(); i++) {
+            if (i > 0) {
+                builder.append("|||");
+            }
+            builder.append(encodeChallenge(challenges.get(i)));
+        }
+        getPrefs(context).edit().putString(KEY_CHALLENGES, builder.toString()).apply();
+    }
+
+    private static String encodeChallenge(Challenge challenge) {
+        return challenge.id + "::"
+                + safeText(challenge.title) + "::"
+                + safeText(challenge.description) + "::"
+                + challenge.difficulty + "::"
+                + safeText(challenge.createdBy);
+    }
+
+    private static Challenge parseChallenge(String row) {
+        String[] parts = row.split("::", -1);
+        if (parts.length < 5) {
+            return null;
+        }
+        try {
+            String difficulty = parts[3];
+            if (!Challenge.isValidDifficulty(difficulty)) {
+                return null;
+            }
+            return new Challenge(
+                    Integer.parseInt(parts[0]),
+                    parts[1],
+                    parts[2],
+                    difficulty,
+                    parts[4]
+            );
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private static String safeText(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("::", " ").replace("|||", " ").replace("\n", " ");
     }
 
     /** One row on the leaderboard. */

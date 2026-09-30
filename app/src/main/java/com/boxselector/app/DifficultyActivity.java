@@ -30,7 +30,7 @@ public class DifficultyActivity extends AppCompatActivity {
         });
 
         setupDifficultyButton(R.id.btnEasy, DifficultyConfig.EASY);
-        setupDifficultyButton(R.id.btnNormal, DifficultyConfig.NORMAL);
+        setupDifficultyButton(R.id.btnMedium, DifficultyConfig.MEDIUM);
         setupDifficultyButton(R.id.btnHard, DifficultyConfig.HARD);
         setupDifficultyButton(R.id.btnExpert, DifficultyConfig.EXPERT);
         setupDifficultyButton(R.id.btnExtreme, DifficultyConfig.EXTREME);

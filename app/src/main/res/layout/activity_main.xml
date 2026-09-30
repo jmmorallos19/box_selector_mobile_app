@@ -110,6 +110,17 @@
             android:textColor="@color/white"
             android:textSize="22sp"
             android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnChallenges"
+            android:layout_width="220dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_button_yellow"
+            android:text="@string/challenges"
+            android:textColor="@color/text_dark"
+            android:textSize="16sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- Bottom Menu: icon + label -->

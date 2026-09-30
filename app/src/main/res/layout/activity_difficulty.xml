@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:gravity="center"
-        android:text="Each difficulty has 15 stages"
+        android:text="Start with Easy. Each difficulty has 15 stages."
         android:textColor="@color/white"
         android:textSize="14sp" />
 
@@ -49,12 +49,12 @@
         android:textStyle="bold" />
 
     <Button
-        android:id="@+id/btnNormal"
+        android:id="@+id/btnMedium"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_button_yellow"
-        android:text="NORMAL  •  4 Lives"
+        android:text="MEDIUM  •  4 Lives"
         android:textColor="@color/text_dark"
         android:textStyle="bold" />
 
@@ -87,5 +87,14 @@
         android:text="EXTREME  •  1 Life"
         android:textColor="@color/white"
         android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="Want Insane or Master? Create a Challenge."
+        android:textColor="@color/yellow_accent"
+        android:textSize="13sp" />
 
 </LinearLayout>
